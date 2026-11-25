@@ -11,7 +11,7 @@ import pandas as pd
 import streamlit as st
 
 from datos import DATOS, RADIO_ESFERA, EFICIENCIA_LPL, CONDUCTORES, PRECIOS, SUPUESTOS_POR_CONFIRMAR
-from motor import Proyecto, MODOS_VARILLA, costo_mastil
+from motor import Proyecto, MODOS_VARILLA, costo_mastil, radio_proteccion
 import graficas as gr
 
 AQUI = Path(__file__).parent
@@ -39,6 +39,8 @@ with st.sidebar.expander("Rayos y sombra (IEC 62305)"):
     d["hora_inicio_sombra"], d["hora_fin_sombra"] = st.slider(
         "Horas sin sombra de mástiles sobre paneles (hora solar)", 6.0, 18.0,
         (DATOS["hora_inicio_sombra"], DATOS["hora_fin_sombra"]), 0.5)
+    d["cables_guarda"] = st.toggle("Usar cables de guarda entre mástiles", value=DATOS["cables_guarda"])
+    d["vano_max"] = st.number_input("Vano máximo del cable de guarda (m)", 20.0, 100.0, DATOS["vano_max"], 5.0)
     d["altura_paneles"] = st.number_input("Altura del borde superior de las mesas (m)", 0.5, 4.0,
                                           DATOS["altura_paneles"], 0.1)
 kml_subido = st.sidebar.file_uploader("Otro terreno (KML de Google Earth)", type=["kml"])
@@ -90,7 +92,7 @@ st.caption("Sistema de puesta a tierra (IEEE Std 80-2013) y protección externa 
 n_mod = len(disp.mesas) * d["modulos_por_mesa"]
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Potencia instalada", f"{n_mod * d['potencia_modulo_w'] / 1e6:.3f} MWp")
-c2.metric("Mástiles", f"{len(disp.mastiles)} × {h} m")
+c2.metric("Mástiles", f"{len(disp.mastiles)} × {h} m" + (f" + {len(disp.cables)} cables" if disp.cables else ""))
 c3.metric("Malla", f"D = {D:.1f} m · {malla['nR']} varillas")
 c4.metric("Rg", f"{malla['Rg']:.3f} Ω")
 c5.metric("Costo SPT + PECAR", f"${costo / 1e6:,.1f} M COP")
@@ -127,6 +129,7 @@ with tabs[0]:
                 ("Poste de concreto 12 m, 510 kg", "824,900 (68,742 por metro)", "Homecenter Colombia, nov. 2026"),
                 ("Poste sobre 12 m", f"{PRECIOS['poste_m_sobre_12']:,} por metro adicional", "Supuesto (+50 %)"),
                 ("Mástil de captación galvanizado 2 m", f"{PRECIOS['mastil_captacion']:,}", "CYPE Colombia: 2,147,392 por 6 m"),
+                ("Herraje de amarre o suspensión del cable de guarda", f"{PRECIOS['herraje_cable']:,}", "Supuesto, cotizar"),
                 ("Instalación del poste", f"{PRECIOS['cimentacion_mastil']:,}", "Supuesto, cotizar"),
                 ("Grava (capa superficial)", f"{PRECIOS['grava_m3']:,} por m³", "Supuesto, cotizar"),
                 ("Tratamiento químico (bentonita)", f"{PRECIOS['tratamiento_m']:,} por m de conductor y {PRECIOS['tratamiento_varilla']:,} por varilla", "Supuesto, cotizar")]
@@ -166,6 +169,14 @@ with tabs[2]:
         st.write(f"- a la altura de los paneles ({d['altura_paneles']} m): **r = {disp.radio_paneles:.2f} m**")
         st.write(f"- a la altura de la caseta ({d['altura_caseta']} m): r = {disp.radio_caseta:.2f} m")
         st.write(f"- cobertura verificada: **{disp.cobertura:.1f} %** de los puntos de muestra de mesas y caseta")
+        if disp.cables:
+            L_c = sum(b - a for a, b, _ in disp.cables)
+            st.subheader("Cables de guarda")
+            st.write(f"{len(disp.cables)} cables de cobre de 50 mm² ({L_c:.0f} m) tendidos entre mástiles a lo largo de los "
+                     f"pasillos, con vanos de hasta {d['vano_max']:.0f} m (IEC 62305-3, conductores tendidos). Con una flecha "
+                     f"del 2 % del vano (~{0.02 * d['vano_max']:.1f} m), cada cable protege una franja de "
+                     f"r = {radio_proteccion(h - 0.02 * d['vano_max'], d['altura_paneles'], R):.1f} m a cada lado a la altura "
+                     f"de los paneles. Reemplazan filas enteras de mástiles; la sombra de un cable de ~9 mm se desprecia.")
         st.info("La referencia usó el radio a nivel del suelo. Aquí se usa el radio a la altura del objeto "
                 "protegido, que es lo que pide el método y es más conservador.")
         st.subheader("Sombra como restricción")
@@ -215,7 +226,7 @@ with tabs[3]:
 with tabs[4]:
     st.subheader("Malla y pararrayos optimizados juntos (pymoo, algoritmo genético)")
     st.write("Variables de decisión: altura del mástil, filas de mesas entre pasillos, espaciamiento D de la malla, "
-             "disposición de varillas, calibre del conductor, capa de grava y tratamiento químico del suelo. Objetivo: **costo total de SPT + PECAR**. "
+             "disposición de varillas, calibre del conductor, capa de grava y tratamiento químico del suelo (los cables de guarda y mástiles se ubican por cobertura al menor costo para cada altura). Objetivo: **costo total de SPT + PECAR**. "
              "Restricciones: Em ≤ contacto tolerable, Es ≤ paso tolerable, Rg ≤ máximo, sección ≥ mínima, "
              "cobertura del 100 % y ninguna sombra de mástil sobre paneles (esta última ya está dentro de la "
              "ubicación de los mástiles).")
@@ -252,7 +263,9 @@ with tabs[5]:
         filas_bom.append(("SPT", "Tratamiento químico del suelo (bentonita) en zanja", malla["Lc"], "m", malla["costo_tratamiento"]))
     unidades = {"Mastiles": (pecar["n"], "u"), "Puntas": (pecar["n"], "u"), "Bajantes": (pecar["L_bajante"], "m"),
                 "Union": (pecar["L_union"], "m"), "Tubo": (pecar["n"] * 2, "m"), "Abrazaderas": (pecar["abrazaderas"], "u"),
-                "Varillas": (len(pecar["varillas_pr"]), "u"), "Soldaduras": (pecar["soldaduras"], "u")}
+                "Varillas": (len(pecar["varillas_pr"]), "u"), "Soldaduras": (pecar["soldaduras"], "u"),
+                "Cables": (pecar["L_cables"], "m"),
+                "Herrajes": (sum(math.ceil((b - a) / d["vano_max"]) + 1 for a, b, _ in pecar["cables"]), "u")}
     for item, valor in pecar["items"].items():
         cant, u = unidades[item.split()[0]]
         filas_bom.append(("PECAR", item, cant, u, valor))

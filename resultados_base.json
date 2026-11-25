@@ -29,12 +29,14 @@
   "hora_inicio_sombra": 9.0,
   "hora_fin_sombra": 15.0,
   "latitud": 6.543,
-  "altura_min": 6,
-  "altura_max": 20,
+  "cables_guarda": true,
+  "vano_max": 50.0,
+  "altura_min": 8,
+  "altura_max": 16,
   "D_min": 5.0,
   "D_max": 60.0,
   "filas_min": 4,
-  "filas_max": 20
+  "filas_max": 10
  },
  "x": [
   12,
@@ -44,24 +46,8 @@
   0,
   2
  ],
- "costo": 477060647.9984273,
+ "costo": 397203256.0110047,
  "alturas": [
-  {
-   "h": 6,
-   "filas": null,
-   "mastiles": null,
-   "costo_pecar": null,
-   "costo_spt": null,
-   "costo_total": null
-  },
-  {
-   "h": 7,
-   "filas": null,
-   "mastiles": null,
-   "costo_pecar": null,
-   "costo_spt": null,
-   "costo_total": null
-  },
   {
    "h": 8,
    "filas": 4,
@@ -73,58 +59,58 @@
   {
    "h": 9,
    "filas": 4,
-   "mastiles": 95,
-   "costo_pecar": 294027421.2989895,
+   "mastiles": 39,
+   "costo_pecar": 191795890.41952425,
    "costo_spt": 225409723.68464285,
-   "costo_total": 519437144.9836323
+   "costo_total": 417205614.1041671
   },
   {
    "h": 10,
    "filas": 4,
-   "mastiles": 89,
-   "costo_pecar": 287676736.7479993,
+   "mastiles": 45,
+   "costo_pecar": 206439489.73114616,
    "costo_spt": 227894004.50752872,
-   "costo_total": 515570741.25552803
+   "costo_total": 434333494.2386749
   },
   {
    "h": 11,
    "filas": 5,
-   "mastiles": 94,
-   "costo_pecar": 314556656.7826105,
+   "mastiles": 52,
+   "costo_pecar": 226272522.35584223,
    "costo_spt": 226816792.84888697,
-   "costo_total": 541373449.6314974
+   "costo_total": 453089315.2047292
   },
   {
    "h": 12,
    "filas": 5,
-   "mastiles": 74,
-   "costo_pecar": 270654462.55822945,
+   "mastiles": 36,
+   "costo_pecar": 182223821.6105711,
    "costo_spt": 223254075.0331972,
-   "costo_total": 493908537.5914266
+   "costo_total": 405477896.6437683
   },
   {
    "h": 13,
    "filas": 5,
-   "mastiles": 71,
-   "costo_pecar": 270502318.72245365,
+   "mastiles": 36,
+   "costo_pecar": 189504044.00988084,
    "costo_spt": 222574574.0880981,
-   "costo_total": 493076892.81055176
+   "costo_total": 412078618.09797895
   },
   {
    "h": 14,
    "filas": 6,
-   "mastiles": 92,
-   "costo_pecar": 358963549.3163352,
+   "mastiles": 66,
+   "costo_pecar": 297831988.9551917,
    "costo_spt": 223664414.32527128,
-   "costo_total": 582627963.6416065
+   "costo_total": 521496403.280463
   },
   {
    "h": 15,
    "filas": 6,
-   "mastiles": 70,
-   "costo_pecar": 284539435.3858218,
+   "mastiles": 42,
+   "costo_pecar": 223235478.0549932,
    "costo_spt": 230843078.33426547,
-   "costo_total": 515382513.7200873
+   "costo_total": 454078556.3892587
   },
   {
    "h": 16,
@@ -133,39 +119,7 @@
    "costo_pecar": 691142397.8667204,
    "costo_spt": 221831852.26853228,
    "costo_total": 912974250.1352527
-  },
-  {
-   "h": 17,
-   "filas": null,
-   "mastiles": null,
-   "costo_pecar": null,
-   "costo_spt": null,
-   "costo_total": null
-  },
-  {
-   "h": 18,
-   "filas": 7,
-   "mastiles": 96,
-   "costo_pecar": 436831929.87627846,
-   "costo_spt": 224071448.92861146,
-   "costo_total": 660903378.8048899
-  },
-  {
-   "h": 19,
-   "filas": null,
-   "mastiles": null,
-   "costo_pecar": null,
-   "costo_spt": null,
-   "costo_total": null
-  },
-  {
-   "h": 20,
-   "filas": null,
-   "mastiles": null,
-   "costo_pecar": null,
-   "costo_spt": null,
-   "costo_total": null
   }
  ],
- "segundos": 411.5
+ "segundos": 457.2
 }

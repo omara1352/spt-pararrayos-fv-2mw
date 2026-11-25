@@ -183,6 +183,7 @@ class Disposicion:
     factible: bool = False
     motivo: str = ""
     candidatos_validos: int = 0
+    cables: list = field(default_factory=list)
 
 
 def disenar_pecar(terreno, caseta, mesas, h, d, vec, res=0.5):
@@ -229,6 +230,8 @@ def disenar_pecar(terreno, caseta, mesas, h, d, vec, res=0.5):
     rad = np.r_[np.full(len(sp), rp), np.full(len(sc), rc)]
     if len(cand) == 0:
         return None, rp, rc, 0.0, "no hay posiciones sin sombra", 0
+    if d.get("cables_guarda"):
+        return pecar_con_cables(cand, S, rad, h, d, R, rp, rc)
     # solo candidatos que alcanzan a cubrir algo
     cov = np.zeros((len(cand), len(S)), bool)
     for i in range(0, len(cand), 800):
@@ -260,7 +263,107 @@ def disenar_pecar(terreno, caseta, mesas, h, d, vec, res=0.5):
                 elegidos = resto
                 cambio = True
                 break
-    return cand[elegidos], rp, rc, 100.0, "", len(cand)
+    return (cand[elegidos], []), rp, rc, 100.0, "", len(cand)
+
+
+def costo_unitario_mastil(h, d):
+    p = PRECIOS
+    return (costo_mastil(h) + p["cimentacion_mastil"] + p["punta_captadora"]
+            + (h + d["profundidad_malla"]) * p["cable_bajante_m"] + 2 * p["tubo_pvc_m"]
+            + math.ceil(h - 2) * p["abrazadera"] + 3 * p["soldadura"])
+
+
+def pecar_con_cables(cand, S, rad, h, d, R, rp, rc):
+    """Cables de guarda (IEC 62305-3, conductores tendidos) entre mastiles a lo largo de
+    los pasillos. Un cable horizontal a la altura h - flecha protege la franja a menos de
+    r(h - flecha, ho) de su eje; la sombra de un cable de 9 mm se desprecia. Se escogen
+    cables y mastiles sueltos con un algoritmo voraz por costo (cobertura / costo)."""
+    vano = d["vano_max"]
+    flecha = 0.02 * vano                                # ~2 % del vano
+    hw = h - flecha
+    ho_p, ho_c = d["altura_paneles"], d["altura_caseta"]
+    rad_w = np.where(rad == rp, radio_proteccion(hw, ho_p, R), radio_proteccion(hw, ho_c, R))
+    Cm = costo_unitario_mastil(h, d)
+    Cw = PRECIOS["cable_bajante_m"]
+    # tramos candidatos: corridas de posiciones permitidas consecutivas en una misma fila (paso 2 m)
+    tramos = []
+    for y in np.unique(cand[:, 1]):
+        xs = np.sort(cand[cand[:, 1] == y, 0])
+        ini = xs[0]
+        for a, b in zip(xs, np.r_[xs[1:], np.inf]):
+            if b - a > 2.01:
+                if a - ini >= 30:
+                    tramos.append((ini, a, y))
+                ini = b
+    cov_m = np.zeros((len(cand), len(S)), bool)
+    for i in range(0, len(cand), 800):
+        c = cand[i:i + 800]
+        cov_m[i:i + 800] = np.hypot(c[:, None, 0] - S[None, :, 0], c[:, None, 1] - S[None, :, 1]) <= rad[None, :]
+
+    def completar_con_mastiles(falta):
+        elegidos = []
+        while falta.any():
+            g = cov_m[:, falta].sum(1)
+            k = int(g.argmax())
+            if g[k] == 0:
+                return None
+            elegidos.append(k)
+            falta = falta & ~cov_m[k]
+        return elegidos
+
+    def solucion(umbral):
+        """Fase 1: cables (voraz por cobertura/costo) mientras rindan >= umbral x el mejor
+        cable; fase 2: mastiles sueltos para lo que falte."""
+        falta = np.ones(len(S), bool)
+        cables, mast_c, r0 = [], [], None
+        while falta.any() and umbral is not None:
+            mejor = None
+            Sx, Sy, rw = S[falta, 0], S[falta, 1], rad_w[falta]
+            idx = np.where(falta)[0]
+            for (x0, x1, y) in tramos:
+                ok = np.hypot(np.clip(Sx, x0, x1) - Sx, Sy - y) <= rw
+                if not ok.any():
+                    continue
+                xs = Sx[ok]
+                a = max(x0, x0 + np.floor((xs.min() - x0) / 2) * 2)
+                b = min(x1, x0 + np.ceil((xs.max() - x0) / 2) * 2)
+                if b - a < 10:
+                    continue
+                costo = (math.ceil((b - a) / vano) + 1) * Cm + (b - a) * Cw
+                if mejor is None or ok.sum() / costo > mejor[0]:
+                    mejor = (ok.sum() / costo, (a, b, y), idx[ok])
+            if mejor is None:
+                break
+            r0 = r0 or mejor[0]
+            if mejor[0] < umbral * r0:
+                break
+            a, b, y = mejor[1]
+            n = math.ceil((b - a) / vano)
+            cables.append((a, b, y))
+            mast_c += [(a + (b - a) * j / n, y) for j in range(n + 1)]
+            falta[mejor[2]] = False
+        el = completar_con_mastiles(falta.copy())
+        if el is None:
+            return None
+        # poda de mastiles sueltos redundantes
+        cubierto_c = ~falta
+        cambio = True
+        while cambio:
+            cambio = False
+            for k in sorted(el, key=lambda k: cov_m[k].sum()):
+                resto = [j for j in el if j != k]
+                if (cubierto_c | (cov_m[resto].any(0) if resto else False)).all():
+                    el, cambio = resto, True
+                    break
+        mast = mast_c + [tuple(cand[k]) for k in el]
+        L = sum(b - a for a, b, _ in cables)
+        return len(mast) * Cm + L * Cw, np.array(mast), cables
+
+    sols = [x for x in (solucion(u) for u in (None, 0.4, 0.7)) if x is not None]
+    if not sols:
+        return None, rp, rc, 0.0, "no se puede cubrir todo sin sombrear", len(cand)
+    _, mastiles, cables = min(sols, key=lambda t: t[0])
+    return (np.array(mastiles), cables), rp, rc, 100.0, "", len(cand)
 
 
 # ------------------------------------------------------------------ PASO 3: malla (IEEE 80-2013)
@@ -375,7 +478,7 @@ def costo_mastil(h):
     return poste + p["mastil_captacion"]
 
 
-def costear_pecar(mastiles, h, malla, d):
+def costear_pecar(mastiles, h, malla, d, cables=()):
     p = PRECIOS; Lr = d["longitud_varilla"]
     red = unary_union(malla["segmentos"] + [malla["anillo"]])
     n = len(mastiles)
@@ -400,7 +503,11 @@ def costear_pecar(mastiles, h, malla, d):
         "Varillas al pie de los mastiles": len(varillas_pr) * p["varilla"],
         "Soldaduras del PECAR": sold * p["soldadura"],
     }
-    return dict(n=n, uniones=uniones, varillas_pr=varillas_pr, L_union=L_union, L_bajante=L_bajante,
+    L_cables = sum(b - a for a, b, _ in cables)
+    if cables:
+        items["Cables de guarda Cu 50 mm2"] = L_cables * p["cable_bajante_m"]
+        items["Herrajes de amarre y suspension"] = sum(math.ceil((b - a) / d["vano_max"]) + 1 for a, b, _ in cables) * p["herraje_cable"]
+    return dict(n=n, cables=list(cables), L_cables=L_cables, uniones=uniones, varillas_pr=varillas_pr, L_union=L_union, L_bajante=L_bajante,
                 abrazaderas=abraz, soldaduras=sold, items=items, costo=sum(items.values()))
 
 
@@ -430,8 +537,10 @@ class Proyecto:
             m, rp, rc, cob, motivo, nc = disenar_pecar(self.terreno, self.caseta, mesas, h, d, self.vec)
             disp.radio_paneles, disp.radio_caseta, disp.cobertura = rp, rc, cob
             disp.candidatos_validos = nc
-            disp.mastiles, disp.motivo = m, motivo
+            disp.motivo = motivo
             disp.factible = m is not None
+            if m is not None:
+                disp.mastiles, disp.cables = m
         self._cache[key] = disp
         return disp
 
@@ -443,7 +552,7 @@ class Proyecto:
         if kg not in self._geo:
             self._geo[kg] = geometria_malla(disp.planta, D, modo, self.d["longitud_varilla"])
         malla = disenar_malla(disp.planta, D, modo, i_cond, grava, self.d, self._geo[kg])
-        pecar = costear_pecar(disp.mastiles, h, malla, self.d)
+        pecar = costear_pecar(disp.mastiles, h, malla, self.d, disp.cables)
         return malla["costo"] + pecar["costo"], disp, malla, pecar
 
 

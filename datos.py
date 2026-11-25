@@ -60,11 +60,15 @@ DATOS = {
     "hora_inicio_sombra": 9.0,
     "hora_fin_sombra": 15.0,
     "latitud": 6.543,
+    # Cables de guarda (IEC 62305-3: conductores tendidos, Cu 50 mm2) entre mastiles a lo
+    # largo de los pasillos: reemplazan filas de mastiles. Vano maximo entre mastiles:
+    "cables_guarda": True,
+    "vano_max": 50.0,                      # m (flecha ~2 % del vano, ~1 m)
 
     # ---------------- Busqueda (pymoo) ----------------
-    "altura_min": 6, "altura_max": 20,     # m, alturas de mastil a probar
+    "altura_min": 8, "altura_max": 16,     # m, alturas de mastil a probar
     "D_min": 5.0, "D_max": 60.0,           # m, espaciamiento de la malla
-    "filas_min": 4, "filas_max": 20,       # filas de mesas entre pasillos de mastiles
+    "filas_min": 4, "filas_max": 10,       # filas de mesas entre pasillos de mastiles
 }
 
 RADIO_ESFERA = {"I": 20.0, "II": 30.0, "III": 45.0, "IV": 60.0}
@@ -104,6 +108,7 @@ PRECIOS = {
     # Tratamiento con bentonita sodica: zanja de ~0.10 x 0.10 m rellena (~12 kg/m),
     # bulto de 25 kg ~ 30 000 COP + mezcla y mano de obra -> ~20 000 COP por metro
     # de conductor y ~40 000 COP por varilla (perforacion rellena). SUPUESTO, cotizar.
+    "herraje_cable": 60_000,        # COP por amarre o grapa de suspension del cable de guarda (SUPUESTO)
     "tratamiento_m": 20_000,
     "tratamiento_varilla": 40_000,
 }

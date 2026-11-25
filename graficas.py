@@ -55,14 +55,18 @@ def plano_pecar(terreno, disp, vec, pecar=None, mostrar_sombras=True):
         if mostrar_sombras:
             s = affinity.translate(huella, x, y)
             ax.fill(*s.exterior.xy, facecolor=C_SOMBRA, alpha=0.18, edgecolor="none", zorder=1)
+    for (a, b, y) in disp.cables:
+        ax.plot([a, b], [y, y], color="#7a3b00", lw=1.6, zorder=4)
     ax.plot(disp.mastiles[:, 0], disp.mastiles[:, 1], "^", color=C_MASTIL, ms=6, mec="black", mew=0.4, zorder=5)
-    ax.legend(handles=[Line2D([0], [0], marker="^", ls="", color=C_MASTIL, mec="black",
+    extra = [Line2D([0], [0], color="#7a3b00", lw=1.6,
+                    label="Cables de guarda Cu 50 mm2 (%d, %.0f m)" % (len(disp.cables), sum(b - a for a, b, _ in disp.cables)))] if disp.cables else []
+    ax.legend(handles=extra + [Line2D([0], [0], marker="^", ls="", color=C_MASTIL, mec="black",
                               label="Mastiles h = %d m (%d)" % (disp.h, len(disp.mastiles))),
                        Patch(facecolor=C_MASTIL, alpha=0.25,
                              label="Zona protegida a la altura de los paneles (r = %.1f m)" % disp.radio_paneles),
                        Patch(facecolor=C_SOMBRA, alpha=0.4, label="Sombra posible de cada mastil (9-15 h, todo el ano)")],
               loc="lower right", fontsize=8)
-    ax.set_title("Pararrayos (esfera rodante) con la sombra como restriccion")
+    ax.set_title("Mastiles y cables de guarda (esfera rodante), con la sombra como restriccion")
     fig.tight_layout()
     return fig
 
@@ -78,6 +82,8 @@ def plano_malla(terreno, disp, malla, pecar):
         ax.plot(v[:, 0], v[:, 1], "o", color=C_MALLA, ms=3.5)
     for (a, b) in pecar["uniones"]:
         ax.plot([a[0], b[0]], [a[1], b[1]], "--", color="#d2691e", lw=1)
+    for (a, b, y) in disp.cables:
+        ax.plot([a, b], [y, y], color="#7a3b00", lw=1.2, zorder=4)
     ax.plot(disp.mastiles[:, 0], disp.mastiles[:, 1], "^", color=C_MASTIL, ms=5, mec="black", mew=0.3, zorder=5)
     if pecar["varillas_pr"]:
         v = np.array(pecar["varillas_pr"])
