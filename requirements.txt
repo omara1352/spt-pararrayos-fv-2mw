@@ -1,0 +1,7 @@
+streamlit>=1.40
+numpy
+scipy
+pandas
+matplotlib
+shapely>=2.0
+pymoo>=0.6.1

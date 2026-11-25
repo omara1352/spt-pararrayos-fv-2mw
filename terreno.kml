@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>Terreno PV 2 MW - Santa Fe de Antioquia (BORRADOR)</name>
+  <Placemark>
+    <name>Terreno planta FV 2 MW (borrador, ~4,3 ha)</name>
+    <description>Borrador trazado sobre imagen satelital Esri World Imagery. Revisar y ajustar en Google Earth antes de usar.</description>
+    <Style><LineStyle><color>ff00ffff</color><width>3</width></LineStyle><PolyStyle><color>4000ffff</color></PolyStyle></Style>
+    <Polygon><outerBoundaryIs><LinearRing><coordinates>
+      -75.819426,6.544053,0 -75.817894,6.544291,0 -75.817502,6.543202,0 -75.817570,6.542215,0 -75.819085,6.542045,0 -75.819374,6.543032,0 -75.819426,6.544053,0
+    </coordinates></LinearRing></outerBoundaryIs></Polygon>
+  </Placemark>
+</Document>
+</kml>

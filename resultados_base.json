@@ -1,0 +1,171 @@
+{
+ "datos": {
+  "potencia_objetivo_w": 2000000,
+  "potencia_modulo_w": 550,
+  "largo_modulo": 2.278,
+  "ancho_modulo": 1.134,
+  "modulos_por_mesa": 12,
+  "espacio_entre_mesas": 0.3,
+  "espacio_entre_filas": 1.3,
+  "retiro_borde": 3.0,
+  "min_mesas_por_tramo": 6,
+  "ancho_min_pasillo": 1.5,
+  "altura_paneles": 1.5,
+  "caseta_ancho": 6.0,
+  "caseta_largo": 4.0,
+  "altura_caseta": 3.0,
+  "resistividad_suelo": 300.0,
+  "corriente_falla": 2500.0,
+  "tiempo_despeje": 0.5,
+  "profundidad_malla": 0.5,
+  "longitud_varilla": 2.4,
+  "resistencia_max": 1.0,
+  "seccion_minima_mm2": 50.0,
+  "resistividad_grava": 3000.0,
+  "espesor_grava": 0.1,
+  "factor_tratamiento": 0.5,
+  "densidad_rayos": 5.0,
+  "nivel_proteccion": "III",
+  "hora_inicio_sombra": 9.0,
+  "hora_fin_sombra": 15.0,
+  "latitud": 6.543,
+  "altura_min": 6,
+  "altura_max": 20,
+  "D_min": 5.0,
+  "D_max": 60.0,
+  "filas_min": 4,
+  "filas_max": 20
+ },
+ "x": [
+  12,
+  5,
+  63,
+  2,
+  0,
+  2
+ ],
+ "costo": 522888551.9984273,
+ "alturas": [
+  {
+   "h": 6,
+   "filas": null,
+   "mastiles": null,
+   "costo_pecar": null,
+   "costo_spt": null,
+   "costo_total": null
+  },
+  {
+   "h": 7,
+   "filas": null,
+   "mastiles": null,
+   "costo_pecar": null,
+   "costo_spt": null,
+   "costo_total": null
+  },
+  {
+   "h": 8,
+   "filas": 4,
+   "mastiles": 146,
+   "costo_pecar": 446852440.5962028,
+   "costo_spt": 223857454.39977574,
+   "costo_total": 670709894.9959786
+  },
+  {
+   "h": 9,
+   "filas": 4,
+   "mastiles": 95,
+   "costo_pecar": 321152011.2989895,
+   "costo_spt": 225409723.68464285,
+   "costo_total": 546561734.9836323
+  },
+  {
+   "h": 10,
+   "filas": 4,
+   "mastiles": 89,
+   "costo_pecar": 322990156.7479993,
+   "costo_spt": 227894004.50752872,
+   "costo_total": 550884161.255528
+  },
+  {
+   "h": 11,
+   "filas": 5,
+   "mastiles": 94,
+   "costo_pecar": 362312228.7826105,
+   "costo_spt": 226816792.84888697,
+   "costo_total": 589129021.6314974
+  },
+  {
+   "h": 12,
+   "filas": 5,
+   "mastiles": 74,
+   "costo_pecar": 316482366.55822945,
+   "costo_spt": 223254075.0331972,
+   "costo_total": 539736441.5914266
+  },
+  {
+   "h": 13,
+   "filas": 5,
+   "mastiles": 71,
+   "costo_pecar": 336972234.72245365,
+   "costo_spt": 222574574.0880981,
+   "costo_total": 559546808.8105518
+  },
+  {
+   "h": 14,
+   "filas": 6,
+   "mastiles": 92,
+   "costo_pecar": 474248381.3163352,
+   "costo_spt": 223664414.32527128,
+   "costo_total": 697912795.6416065
+  },
+  {
+   "h": 15,
+   "filas": 6,
+   "mastiles": 70,
+   "costo_pecar": 394439155.3858218,
+   "costo_spt": 230843078.33426547,
+   "costo_total": 625282233.7200873
+  },
+  {
+   "h": 16,
+   "filas": 7,
+   "mastiles": 166,
+   "costo_pecar": 1004367133.8667204,
+   "costo_spt": 221831852.26853228,
+   "costo_total": 1226198986.1352527
+  },
+  {
+   "h": 17,
+   "filas": null,
+   "mastiles": null,
+   "costo_pecar": null,
+   "costo_spt": null,
+   "costo_total": null
+  },
+  {
+   "h": 18,
+   "filas": 7,
+   "mastiles": 96,
+   "costo_pecar": 678818745.8762785,
+   "costo_spt": 224071448.92861146,
+   "costo_total": 902890194.8048899
+  },
+  {
+   "h": 19,
+   "filas": null,
+   "mastiles": null,
+   "costo_pecar": null,
+   "costo_spt": null,
+   "costo_total": null
+  },
+  {
+   "h": 20,
+   "filas": null,
+   "mastiles": null,
+   "costo_pecar": null,
+   "costo_spt": null,
+   "costo_total": null
+  }
+ ],
+ "segundos": 302.6
+}
