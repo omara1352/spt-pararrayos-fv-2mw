@@ -369,10 +369,10 @@ def disenar_malla(planta, D, modo_varillas, i_cond, mejora, d, geo=None):
 
 # ------------------------------------------------------------------ costo del PECAR
 def costo_mastil(h):
+    """Poste de concreto de longitud h + mastil de captacion de 2 m (sin instalacion)."""
     p = PRECIOS
-    if h <= 12:
-        return h * p["mastil_m_hasta_12"]
-    return 12 * p["mastil_m_hasta_12"] + (h - 12) * p["mastil_m_sobre_12"]
+    poste = min(h, 12) * p["poste_m_hasta_12"] + max(0, h - 12) * p["poste_m_sobre_12"]
+    return poste + p["mastil_captacion"]
 
 
 def costear_pecar(mastiles, h, malla, d):
@@ -391,7 +391,7 @@ def costear_pecar(mastiles, h, malla, d):
     abraz = n * math.ceil(h - 2)
     sold = 2 * n + len(varillas_pr)
     items = {
-        "Mastiles (h = %d m) + cimentacion" % h: n * (costo_mastil(h) + p["cimentacion_mastil"]),
+        "Mastiles (poste de concreto h = %d m + captacion) e instalacion" % h: n * (costo_mastil(h) + p["cimentacion_mastil"]),
         "Puntas captadoras": n * p["punta_captadora"],
         "Bajantes Cu 50 mm2": L_bajante * p["cable_bajante_m"],
         "Union enterrada mastil-malla Cu 50 mm2": L_union * p["cable_bajante_m"],

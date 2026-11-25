@@ -25,14 +25,14 @@ d = dict(DATOS)
 with st.sidebar.expander("Suelo y falla (IEEE 80)", expanded=True):
     d["resistividad_suelo"] = st.number_input("Resistividad del suelo ρ (Ω·m) · supuesto", 10.0, 5000.0,
                                               DATOS["resistividad_suelo"], 10.0)
-    d["corriente_falla"] = st.number_input("Corriente máxima de malla IG (A) · supuesto", 100.0, 40000.0,
+    d["corriente_falla"] = st.number_input("Corriente máxima de malla IG (A)", 100.0, 40000.0,
                                            DATOS["corriente_falla"], 100.0)
     d["tiempo_despeje"] = st.number_input("Tiempo de despeje (s)", 0.05, 3.0, DATOS["tiempo_despeje"], 0.05)
     d["factor_tratamiento"] = st.number_input("Factor del tratamiento químico (ρ tratada / ρ nativa) · supuesto",
                                               0.1, 1.0, DATOS["factor_tratamiento"], 0.05)
     d["resistencia_max"] = st.number_input("Rg máxima admitida (Ω)", 0.1, 25.0, DATOS["resistencia_max"], 0.1)
 with st.sidebar.expander("Rayos y sombra (IEC 62305)"):
-    d["densidad_rayos"] = st.number_input("Densidad de descargas Ng (rayos/km²/año) · supuesto", 0.1, 60.0,
+    d["densidad_rayos"] = st.number_input("Densidad de descargas Ng (rayos/km²/año)", 0.1, 60.0,
                                           DATOS["densidad_rayos"], 0.5)
     d["nivel_proteccion"] = st.selectbox("Nivel de protección", list(RADIO_ESFERA),
                                          index=list(RADIO_ESFERA).index(DATOS["nivel_proteccion"]))
@@ -108,10 +108,10 @@ with tabs[0]:
         ("Potencia objetivo", "2 MWp", "Especificación del proyecto"),
         ("Módulo", f"{d['potencia_modulo_w']} Wp, {d['largo_modulo']} × {d['ancho_modulo']} m", "Igual a la referencia"),
         ("Resistividad del suelo", f"{d['resistividad_suelo']:.0f} Ω·m nativa; con tratamiento {d['resistividad_suelo'] * d['factor_tratamiento']:.0f} Ω·m", "Supuesto: suelo aluvial seco del cañón del Cauca; tratamiento como en la referencia"),
-        ("Corriente de malla IG / despeje", f"{d['corriente_falla']:.0f} A / {d['tiempo_despeje']} s", "Supuesto: igual a la referencia"),
+        ("Corriente de malla IG / despeje", f"{d['corriente_falla']:.0f} A / {d['tiempo_despeje']} s", "Igual a la referencia (literatura, Sf = 1); confirmar con el operador de red"),
         ("Profundidad de malla / varilla", f"{d['profundidad_malla']} m / copperweld 5/8\" × {d['longitud_varilla']} m", "IEEE 80, comercial"),
-        ("Densidad de descargas Ng", f"{d['densidad_rayos']} rayos/km²/año", "Supuesto: confirmar con NTC 4552-1"),
-        ("Nivel de protección", f"{d['nivel_proteccion']} (esfera de {RADIO_ESFERA[d['nivel_proteccion']]:.0f} m)", "IEC 62305-3"),
+        ("Densidad de descargas Ng", f"{d['densidad_rayos']} rayos/km²/año", "EPM, Anexo A parámetros meteorológicos: Olaya 11.4, Sopetrán y San Jerónimo 11"),
+        ("Nivel de protección", f"{d['nivel_proteccion']} (esfera de {RADIO_ESFERA[d['nivel_proteccion']]:.0f} m)", "Igual a la referencia, IEC 62305-3"),
         ("Sombra", f"Sin sombra sobre paneles de {d['hora_inicio_sombra']:.1f} h a {d['hora_fin_sombra']:.1f} h, todo el año", "Criterio de diseño FV"),
         ("Pasillos", f"Entre filas {d['espacio_entre_filas']} m; principal ≥ {d['ancho_min_pasillo']} m", "RETIE 3.17.23 y NTC 2050 110.26 (≥ 0.76 m)"),
     ]
@@ -125,9 +125,10 @@ with tabs[0]:
     precios += [("Varilla copperweld", f"{PRECIOS['varilla']:,}", "Referencia"),
                 ("Soldadura exotérmica", f"{PRECIOS['soldadura']:,}", "Referencia"),
                 ("Punta captadora", f"{PRECIOS['punta_captadora']:,}", "Referencia"),
-                ("Mástil hasta 12 m", f"{PRECIOS['mastil_m_hasta_12']:,} por metro", "Supuesto, cotizar"),
-                ("Torre sobre 12 m", f"{PRECIOS['mastil_m_sobre_12']:,} por metro adicional", "Supuesto, cotizar"),
-                ("Cimentación del mástil", f"{PRECIOS['cimentacion_mastil']:,}", "Supuesto, cotizar"),
+                ("Poste de concreto 12 m, 510 kg", "824,900 (68,742 por metro)", "Homecenter Colombia, nov. 2026"),
+                ("Poste sobre 12 m", f"{PRECIOS['poste_m_sobre_12']:,} por metro adicional", "Supuesto (+50 %)"),
+                ("Mástil de captación galvanizado 2 m", f"{PRECIOS['mastil_captacion']:,}", "CYPE Colombia: 2,147,392 por 6 m"),
+                ("Instalación del poste", f"{PRECIOS['cimentacion_mastil']:,}", "Supuesto, cotizar"),
                 ("Grava (capa superficial)", f"{PRECIOS['grava_m3']:,} por m³", "Supuesto, cotizar"),
                 ("Tratamiento químico (bentonita)", f"{PRECIOS['tratamiento_m']:,} por m de conductor y {PRECIOS['tratamiento_varilla']:,} por varilla", "Supuesto, cotizar")]
     st.dataframe(pd.DataFrame(precios, columns=["Ítem", "Precio", "Fuente"]), hide_index=True, width="stretch")
@@ -264,6 +265,6 @@ with tabs[5]:
     c1.metric("SPT", f"${malla['costo'] / 1e6:,.1f} M")
     c2.metric("PECAR", f"${pecar['costo'] / 1e6:,.1f} M")
     c3.metric("Total", f"${costo / 1e6:,.1f} M COP")
-    st.caption(f"Costo de un mástil de {h} m sin cimentación: ${costo_mastil(h):,.0f} (supuesto, cotizar).")
+    st.caption(f"Costo de un mástil de {h} m (poste de concreto + captación de 2 m) sin instalación: ${costo_mastil(h):,.0f}.")
     st.download_button("Descargar presupuesto (CSV)", bom.to_csv(index=False).encode("utf-8"),
                        "presupuesto_spt_pecar_2MW.csv", "text/csv")

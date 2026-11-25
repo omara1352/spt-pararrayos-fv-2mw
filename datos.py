@@ -32,8 +32,8 @@ DATOS = {
     # (el doble de lo que uso la referencia en Barbosa) y SIN tratamiento
     # quimico, para no depender de un valor que despues haya que corregir.
     "resistividad_suelo": 300.0,           # ohm-m (SUPUESTO hasta tener medicion Wenner)
-    # SUPUESTO: la misma corriente de malla que la referencia (falla a tierra
-    # en el lado de 13.2 kV). Confirmar con el operador de red / asesor.
+    # Igual que la referencia (2500 A, 0.5 s, valor de literatura, Sf = 1 conservador).
+    # Confirmar con el estudio de cortocircuito del operador de red antes de construir.
     "corriente_falla": 2500.0,             # A, corriente maxima de malla IG
     "tiempo_despeje": 0.5,                 # s
     "profundidad_malla": 0.5,              # m
@@ -48,10 +48,12 @@ DATOS = {
     "factor_tratamiento": 0.5,
 
     # ---------------- Rayos (IEC 62305 / NTC 4552) ----------------
-    # SUPUESTO: densidad de descargas a tierra. Confirmar con el mapa de la
-    # NTC 4552-1 o con datos de Keraunos/IDEAM para Santa Fe de Antioquia.
-    "densidad_rayos": 5.0,                 # rayos/km2/ano
-    "nivel_proteccion": "III",             # LPL (igual que la referencia); radio de esfera 45 m
+    # Densidad de descargas a tierra: EPM, Anexo A "Caracterizacion de los parametros
+    # meteorologicos en las zonas de influencia del Grupo EPM" (EPM-UCET-NYL-GM-012).
+    # Santa Fe de Antioquia no aparece; sus vecinos Sopetran y San Jeronimo tienen 11
+    # y Olaya 11.4 rayos/km2-ano. Se adopta el mayor (11.4), conservador.
+    "densidad_rayos": 11.4,                # rayos/km2/ano
+    "nivel_proteccion": "III",             # LPL III, igual que la referencia (IEC 62305); esfera de 45 m
     # Sombra: ningun mastil puede sombrear un panel entre estas horas solares,
     # ningun dia del ano (criterio usual de diseno FV; la referencia solo
     # revisaba el 21 de diciembre a las 3 p.m.).
@@ -85,10 +87,18 @@ PRECIOS = {
     "punta_captadora": 119_833,     # u, Franklin 4 puntas (referencia)
     "tubo_pvc_m": 1_767,            # m, conduit PVC 3/4" (referencia)
     "cable_bajante_m": 50 * PRECIO_CU_MM2_M,   # 50 mm2 (referencia)
-    # SUPUESTOS (la referencia los dejo "a cotizar"); cambian el optimo, cotizar:
-    "mastil_m_hasta_12": 180_000,   # COP por metro de mastil tubular galvanizado autosoportado
-    "mastil_m_sobre_12": 420_000,   # COP por metro de torre de celosia (h > 12 m)
-    "cimentacion_mastil": 600_000,  # COP por mastil (dado de concreto)
+    # Mastil = poste de concreto (empotrado ~1.8 m) + mastil de captacion galvanizado de 2 m
+    # en la cima, de modo que la punta queda a la altura h del poste.
+    #  - Poste de concreto 12 m, 510 kg: 824 900 COP (Homecenter Colombia, nov. 2026)
+    #    -> 68 742 COP por metro hasta 12 m.
+    #  - Mastil de acero galvanizado 1 1/2": 2 147 392 COP por 6 m (CYPE, generador de
+    #    precios Colombia) -> 357 899 COP/m -> 715 800 COP el tramo de 2 m.
+    #  - Sobre 12 m: poste reforzado/autosoportado, +50 % por metro (SUPUESTO).
+    #  - Instalacion con grua y empotramiento: 600 000 COP por poste (SUPUESTO, cotizar).
+    "poste_m_hasta_12": 68_742,
+    "poste_m_sobre_12": 103_100,
+    "mastil_captacion": 715_800,
+    "cimentacion_mastil": 600_000,
     "abrazadera": 8_000,            # u
     "grava_m3": 110_000,            # COP/m3 instalada
     # Tratamiento con bentonita sodica: zanja de ~0.10 x 0.10 m rellena (~12 kg/m),
