@@ -50,8 +50,7 @@ def proyecto(datos_json, kml):
     return Proyecto(kml, json.loads(datos_json))
 
 
-@st.cache_data(show_spinner=False)
-def resultado_guardado():
+def resultado_guardado():   # sin cache: el archivo es pequeno y asi nunca queda una version vieja
     f = AQUI / "resultados_base.json"
     return json.loads(f.read_text(encoding="utf-8")) if f.exists() else None
 
